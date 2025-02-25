@@ -1,0 +1,159 @@
+zabbix_export:
+  version: '7.0'
+  template_groups:
+    - uuid: 7df96b18c230490a9a0a9e2307226338
+      name: Templates
+  templates:
+    - uuid: fca3034359ab4949a5e3d46bef54402c
+      template: Tesla_charger_api
+      name: Tesla_charger_api
+      groups:
+        - name: Templates
+      items:
+        - uuid: 0d5f91d9d9f943e2b6f73f13546546ac
+          name: 'Tesla Charger - Current Alerts'
+          type: HTTP_AGENT
+          key: tesla.charge.alerts
+          delay: 30s
+          history: 365d
+          value_type: TEXT
+          trends: '0'
+          preprocessing:
+            - type: JSONPATH
+              parameters:
+                - '$["current_alerts"]'
+          url: 'http://{$CHARGER_IP}/api/1/vitals'
+        - uuid: 9672bcb4c19f4c1b8491a2c69c3a8005
+          name: 'Tesla Charger - Charging Current'
+          type: HTTP_AGENT
+          key: tesla.charge.current
+          delay: 30s
+          history: 365d
+          value_type: FLOAT
+          preprocessing:
+            - type: JSONPATH
+              parameters:
+                - '$["vehicle_current_a"]'
+          url: 'http://{$CHARGER_IP}/api/1/vitals'
+        - uuid: 28c6044163ce4b0aa4357318056993af
+          name: 'Tesla Charger - Charging Status'
+          type: HTTP_AGENT
+          key: tesla.charge.status
+          delay: 30s
+          history: 365d
+          value_type: TEXT
+          trends: '0'
+          preprocessing:
+            - type: JSONPATH
+              parameters:
+                - '$["contactor_closed"]'
+          url: 'http://{$CHARGER_IP}/api/1/vitals'
+        - uuid: 95aa649ff5ac467f807da4f5bff93f01
+          name: 'Tesla Charger - EVSE State'
+          type: HTTP_AGENT
+          key: tesla.evse.state
+          delay: 30s
+          history: 365d
+          value_type: TEXT
+          trends: '0'
+          preprocessing:
+            - type: JSONPATH
+              parameters:
+                - '$["evse_state"]'
+            - type: JAVASCRIPT
+              parameters:
+                - |
+                  var state = parseInt(value);
+                  switch(state) {
+                      case 0: return "Available";
+                      case 1: return "Charging";
+                      case 2: return "Completed";
+                      case 3: return "Fault";
+                      case 4: return "Waiting for vehicle";
+                      case 5: return "Error (non-fatal)";
+                      case 6: return "Ready to charge";
+                      case 7: return "Unknown / Not ready";
+                      case 8: return "Standby"; // Or another appropriate description for state 8
+                      default: return "Unknown State";
+                  }
+                  
+          url: 'http://{$CHARGER_IP}/api/1/vitals'
+        - uuid: 2e6dd5ff8a844df8b2d4a4fe7b5cc0c1
+          name: 'Tesla Charger - Grid Frequency'
+          type: HTTP_AGENT
+          key: tesla.grid.frequency
+          delay: 30s
+          history: 365d
+          value_type: FLOAT
+          preprocessing:
+            - type: JSONPATH
+              parameters:
+                - '$["grid_hz"]'
+          url: 'http://{$CHARGER_IP}/api/1/vitals'
+        - uuid: 908d06748ea5426697bd1d2908bc7ee5
+          name: 'Tesla Charger - Grid Voltage'
+          type: HTTP_AGENT
+          key: tesla.grid.voltage
+          delay: 30s
+          history: 365d
+          value_type: FLOAT
+          preprocessing:
+            - type: JSONPATH
+              parameters:
+                - '$["grid_v"]'
+          url: 'http://{$CHARGER_IP}/api/1/vitals'
+        - uuid: 3a99d5908f424d538c550904ec627815
+          name: 'Tesla Charger - Session Energy'
+          type: HTTP_AGENT
+          key: tesla.session.energy
+          delay: 30s
+          history: 365d
+          value_type: FLOAT
+          preprocessing:
+            - type: JSONPATH
+              parameters:
+                - '$["session_energy_wh"]'
+            - type: JAVASCRIPT
+              parameters:
+                - 'return value / 1000;'
+          url: 'http://{$CHARGER_IP}/api/1/vitals'
+        - uuid: 18324ce3afc64c29890437f424b1defd
+          name: 'Tesla Charger - Handle Temperature'
+          type: HTTP_AGENT
+          key: tesla.temp.handle
+          delay: 30s
+          history: 365d
+          value_type: FLOAT
+          preprocessing:
+            - type: JSONPATH
+              parameters:
+                - '$["handle_temp_c"]'
+          url: 'http://{$CHARGER_IP}/api/1/vitals'
+        - uuid: 603d363c33734140b7e614d509da603d
+          name: 'Tesla Charger - PCBA Temperature'
+          type: HTTP_AGENT
+          key: tesla.temp.pcba
+          delay: 30s
+          history: 365d
+          value_type: FLOAT
+          preprocessing:
+            - type: JSONPATH
+              parameters:
+                - '$["pcba_temp_c"]'
+          url: 'http://{$CHARGER_IP}/api/1/vitals'
+        - uuid: b11614ef2a0d437b81fc69444800e571
+          name: 'Tesla Charger - Vehicle Connected'
+          type: HTTP_AGENT
+          key: tesla.vehicle.connected
+          delay: 30s
+          history: 365d
+          value_type: TEXT
+          trends: '0'
+          preprocessing:
+            - type: JSONPATH
+              parameters:
+                - '$["vehicle_connected"]'
+          url: 'http://{$CHARGER_IP}/api/1/vitals'
+      macros:
+        - macro: '{$CHARGER_IP}'
+          value: 192.168.21.
